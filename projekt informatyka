@@ -1,0 +1,95 @@
+# ZADANIE 1 - JORNEY TO THE MOON 
+
+# użyjemy algorytmu BFS
+
+def journeyToMoon(n, astronaut):
+    # traktujemy każdego astronautę jako wierzchołek grafu
+    graf = [[] for _ in range(n)]
+
+    # a każdą parę (x, y) z listy astronaut jako krawędź w grafie
+    for x, y in astronaut:
+        graf[x].append(y)
+        graf[y].append(x)
+
+    odwiedzeni = set()  # zbiór odwiedzonych astronautów (będzieny chodzić po grafie)
+
+    def bfs(start):
+        zbior_sasiadow = [start]
+        odwiedzeni.add(start)
+        size = 1
+
+        while zbior_sasiadow:
+            s = zbior_sasiadow.pop()
+            for sasiad in graf[s]:
+                if sasiad not in odwiedzeni:
+                    odwiedzeni.add(sasiad)
+                    zbior_sasiadow.append(sasiad)
+                    size += 1
+        return size
+
+    # rozmiary wszystkich krajów
+    rozmiary_krajow = []
+
+    for i in range(n):
+        if i not in odwiedzeni:
+            rozmiary_krajow.append(bfs(i))
+
+
+    # (k1 + k2 + ... + k(i-1)) * k(i) - mnożymy rozmiar każdego kraju przez wszystkie pozostałe i dodajemy, w ten sposób otrzymujemy
+    # liczbę unikatowych par astronautów
+
+    suma = 0
+    wynik = 0
+
+    for k in rozmiary_krajow:
+        wynik += suma * k
+        suma += k
+
+    return wynik
+
+
+##############################################################################################################
+
+
+# ZADANIE 2 - EVEN TREE
+
+# możemy usunąć krawędź wtedy i tylko wtedy gdy liczba wierzchołków w poddrzewie jest parzysta (bo skoro wyjściowe drzewo ma parzystą liczbę
+# wierzchołków, to po oddzieleniu zbioru z parzystą liczbą wierzchołków zostaje nam reszta drzewa z parzystą liczbą wierchołków)
+
+# użyjemy DFS - Deph-First Search (idzimy jak najgłębiej od pewnego wierzchołka "w dół" i gdy dojdziemy do końca grafu to cofamy się a następnie znowu idziemy "w dół" tyle, że inną ścieżką
+
+def evenForest(t_nodes, t_edges, t_from, t_to):
+
+    # tworzymy graf
+    graf = [[] for _ in range(t_nodes + 1)]
+
+    for i in range(t_edges):
+        u = t_from[i]
+        v = t_to[i]
+        graf[u].append(v)
+        graf[v].append(u)
+
+    odwiedzone = set()
+    usuniete_krawedzie = 0
+
+    def dfs(start):
+        odwiedzone.add(start)
+        rozmiar = 1
+
+        for sasiad in graf[start]:
+            if sasiad not in odwiedzone:
+                poddrzewo = dfs(sasiad)
+
+                if poddrzewo % 2 == 0:
+                    nonlocal usuniete_krawedzie
+                    usuniete_krawedzie += 1
+                    # odcinamy poddrzewo, zatem nie dodajemy do rozmiaru
+                    poddrzewo = 0
+
+                rozmiar += poddrzewo
+
+        return rozmiar
+
+    dfs(1) # zaczynamy chodzić po grafie od korzenia
+    return usuniete_krawedzie
+
